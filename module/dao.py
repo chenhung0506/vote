@@ -8,7 +8,7 @@ log = log.logging.getLogger(__name__)
 
 class Database(object):
     def __init__(self):
-        conn = pymysql.Connect(host='localhost',user='root',passwd='password',db='vote',charset='utf8')
+        conn = pymysql.Connect(host='192.168.3.155',user='root',passwd='password',db='vote',charset='utf8')
         self.conn = conn
     def queryOptions(self):
         cursor = self.conn.cursor()

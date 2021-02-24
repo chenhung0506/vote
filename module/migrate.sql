@@ -2,8 +2,8 @@ CREATE DATABASE IF NOT EXISTS `vote` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8m
 USE `vote`;
 START TRANSACTION;
 
-drop table if exists vote.optino;
-create table vote.optino(
+drop table if exists vote.option;
+create table vote.option(
     op_id INT NOT NULL AUTO_INCREMENT,
     op_name VARCHAR(20) NOT NULL,
     op_desc VARCHAR(80),

@@ -7,8 +7,9 @@ import threading
 from datetime import datetime
 from flask import Flask, Response, render_template, request, redirect, jsonify, send_from_directory, url_for, make_response
 from threading import Timer,Thread,Event
-import const
 from flask_restful import Resource
+import const
+import utils
 import log as logpy
 from urllib.parse import urlencode
 from urllib.request import urlopen
@@ -19,13 +20,20 @@ log = logpy.logging.getLogger(__name__)
 # https://codesandbox.io/s/n3p4y?file=/src/App.vue
 
 def setup_route(api):
-    api.add_resource(Recaptcha, '/recaptcha')
+    api.add_resource(Recaptcha, '/vote/recaptcha')
 
 class Recaptcha(Resource):
     def post(self):
         log.info(request.data)
         URIReCaptcha = 'https://www.google.com/recaptcha/api/siteverify'
-        recaptchaResponse = json.loads(request.data).get('g-recaptcha-response', None)
+        recaptchaResponse = None
+        try:
+            recaptchaResponse = json.loads(request.data).get('g-recaptcha-response', None)
+        except Exception as e:
+            log.error("Recaptcha error: "+utils.except_raise(e))
+            return 'false'
+        if recaptchaResponse == None:
+            return 'false'
         private_recaptcha = '6LellmQaAAAAAL705D1E8DkgNDHId8P0PFydI-Or'
         remote_ip = request.remote_addr
         params = urlencode({
@@ -41,5 +49,7 @@ class Recaptcha(Resource):
 
         if success == True:
             log.info('reCaptcha passed')
+            return 'success'
         else:
             log.info('recaptcha failed')
+            return 'false'

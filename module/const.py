@@ -9,6 +9,11 @@ print( os.getenv('IS_LOADED') + ", .env file path: " + dotenv_path )
 
 PORT=os.environ.get('PORT', os.getenv('PORT'))
 LOG_LEVEL=os.environ.get('LOG_LEVEL', os.getenv('LOG_LEVEL'))
+
+DB_HOST=os.environ.get('DB_HOST', os.getenv('DB_HOST'))
+DB_ACCOUNT=os.environ.get('DB_ACCOUNT', os.getenv('DB_ACCOUNT'))
+DB_PASSWORD=os.environ.get('DB_PASSWORD', os.getenv('DB_PASSWORD'))
+
 START_TIME=os.environ.get('START_TIME', os.getenv('START_TIME'))
 END_TIME=os.environ.get('END_TIME', os.getenv('END_TIME'))
 CALL_DIRECTION=os.environ.get('CALL_DIRECTION', os.getenv('CALL_DIRECTION'))
