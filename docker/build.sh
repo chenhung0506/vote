@@ -1,8 +1,8 @@
 #!/bin/bash
 build() {
   TAG=$(git rev-parse --short HEAD)-$(date '+%Y%m%d-%H%M') 
-  export REPO=harbor.emotibot.com/bfop
-  export CONTAINER=customized
+  export REPO=harbor.chlin.tk/python
+  export CONTAINER=vote
   DOCKER_IMAGE=$REPO/$CONTAINER:$TAG
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   BUILDROOT=$DIR/..
@@ -41,12 +41,12 @@ dockerRun() {
   # - max memory = 5G \
   # "
   globalConf="
-    -v ~/volumes/customized:/usr/src/app/logs \
+    -v ~/volumes/vote:/usr/src/app/logs \
     -v ~/.ssh/known_hosts:/root/.ssh/known_hosts \
     -v ~/etc/timezone:/etc/localtime:ro \
     -m 5125m \
     --restart always \
-    --net docker-compose-base_default \
+    --net nginx \
     -e TZ=Asia/Taipei \
   "
   moduleConf="

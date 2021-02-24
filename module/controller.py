@@ -39,7 +39,6 @@ def setup_route(api):
     api.add_resource(StaticResource, '/customized/<path:filename>')
     api.add_resource(FTP_test, '/FTP_test')
     api.add_resource(GetOptions, '/vote/getOptions')
-    api.add_resource(GetOptions2, '/getOptions')
     api.add_resource(GetBallots, '/vote/getBallots')
 
 class StaticResource(Resource):
@@ -50,12 +49,6 @@ class StaticResource(Resource):
         return send_from_directory('./resource/customized',  filename )
 
 class GetOptions(Resource):
-    def post(self):
-        data = dao.Database().queryOptions()
-        log.info(data)
-        return {"data":data, "status": 200, "message":"success"}, 200
-
-class GetOptions2(Resource):
     def post(self):
         data = dao.Database().queryOptions()
         log.info(data)

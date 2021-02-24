@@ -5,8 +5,6 @@ COPY ./module/requirements.txt /usr/src/app
 RUN apk update
 RUN apk add --virtual .py_deps build-base python3-dev libffi-dev gcc musl-dev openssl-dev
 RUN pip install -r /usr/src/app/requirements.txt
-RUN pip install cryptography &&\
-    pip install pysftp
 RUN apk del .py_deps &&\
     apk add -U tzdata &&\
     apk add curl &&\

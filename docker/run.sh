@@ -8,8 +8,8 @@ source ${WORK_PATH}/build.sh
 
 ENV=dev.env
 # TAG=$(git rev-parse --short HEAD)-$(date '+%Y%m%d-%H%M') 
-export REPO=harbor.emotibot.com/bfop
-export CONTAINER=customized
+export REPO=harbor.chlin.tk/python
+export CONTAINER=vote
 
 select_number $1
 echo "mode: "$?

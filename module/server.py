@@ -7,6 +7,7 @@ import os
 import const
 import controller
 import controller_sso
+import controller_recaptcha
 #import controller_ccui
 import flask_restful
 import utils
@@ -28,6 +29,7 @@ app = Flask(__name__, template_folder=template_dir)
 api = Api(app)
 controller.setup_route(api)
 controller_sso.setup_route(api)
+controller_recaptcha.setup_route(api)
 # setting for send_from_directory
 app.static_folder = os.path.abspath("resource/customized/")
 app.static_url_path = os.path.abspath("resource/customized/")
