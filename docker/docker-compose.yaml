@@ -1,16 +1,14 @@
 version: "3.7"
 services:
   web:
-    image: ${DOCKER_IMAGE}
-    container_name: customized
+    image: ${REPO}/${CONTAINER}:${TAG}
+    container_name: ${CONTAINER}
     environment:
       - TZ=Asia/Taipei
     volumes:
-      # - ~/volumes/data_for_KG:/usr/src/app/data_for_KG
-      - ~/volumes/customized:/usr/src/app/logs
+      - ~/volumes/vote:/usr/src/app/logs
       - ~/etc/timezone:/etc/localtime:ro
       - ~/.ssh/known_hosts:/root/.ssh/known_hosts
-    restart: always
     ports: 
       - ${PORT}:${PORT}
     env_file:
@@ -20,3 +18,10 @@ services:
       interval: 60s
       timeout: 10s
       start_period: 10s
+    restart: always
+    networks: 
+      - nginx
+networks:
+  nginx:
+    external: true
+    name: nginx

@@ -1,13 +1,8 @@
 #!/bin/bash
 build() {
-  TAG=$(git rev-parse --short HEAD)-$(date '+%Y%m%d-%H%M') 
-  export REPO=harbor.chlin.tk/python
-  export CONTAINER=vote
-  DOCKER_IMAGE=$REPO/$CONTAINER:$TAG
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   BUILDROOT=$DIR/..
-  # Build docker
-  cmd="DOCKER_BUILDKIT=1 docker build -t $DOCKER_IMAGE -f $DIR/Dockerfile $BUILDROOT"
+  cmd="DOCKER_BUILDKIT=1 docker build -t $REPO/$CONTAINER:$TAG -f $DIR/Dockerfile $BUILDROOT"
   # cmd="DOCKER_BUILDKIT=1 docker build -t $DOCKER_IMAGE -f $DIR/Dockerfile $BUILDROOT --no-cache=true"
   echo $cmd
   eval $cmd
@@ -27,12 +22,6 @@ imagePull() {
       fi
     fi
     echo "# Great! Docker image found: $DOCKER_IMAGE"
-}
-
-dockerComposeUp() {
-  cmd="docker-compose up"
-  echo $cmd
-  eval $cmd
 }
 
 dockerRun() {
@@ -72,13 +61,12 @@ saveImage(){
     mkdir $BUILDROOT/imgs
   fi
 
-  cmd="docker save $DOCKER_IMAGE | gzip > $BUILDROOT/imgs/$CONTAINER-$TAG.tar.gz"
+  cmd="docker save $REPO/$CONTAINER:$TAG | gzip > $BUILDROOT/imgs/$CONTAINER-$TAG.tar.gz"
   echo $cmd
   eval $cmd
 }
 
 saveDeploy(){
-  TAG=$(git rev-parse --short HEAD)
   DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
   PROJECT_NAME="$(cd $DIR && basename "$PWD")"
   BUILD_DIR=$DIR/../..
@@ -89,20 +77,38 @@ saveDeploy(){
   echo $cmd
 }
 
-select_number(){
-  echo "[ -------- 1.   build and run        -------- ]"
-  echo "[ -------- 2.   pull image and run   -------- ]"
-  echo "[ -------- 3.   run module           -------- ]"
-  echo "[ -------- 4.   stop module          -------- ]"
-  echo "[ -------- 5.   push image           -------- ]"
-  echo "[ -------- 6.   save image           -------- ]"
-  echo "[ -------- 7.   save deploy          -------- ]"
+print_options(){
+  echo "[ ------- 1.  build and run       ------- ]"
+  echo "[ ------- 2.  pull image and run  ------- ]"
+  echo "[ ------- 3.  run module          ------- ]"
+  echo "[ ------- 4.  stop module         ------- ]"
+  echo "[ ------- 5.  push image          ------- ]"
+  echo "[ ------- 6.  save image          ------- ]"
+  echo "[ ------- 7.  save deploy         ------- ]"
+  echo "[ ------- 8.  delete image        ------- ]"
+}
 
+print_help(){
+  echo "=============================================="
+  echo "First Options: "
+  print_options
+  echo "Other Options:"
+  echo "-t : Input tag by user"
+  echo "-v : Build with git data"
+  echo "-l : Run with latest version"
+  echo "-e : Specify .env file"
+  echo "-p : Push image"
+  echo "Run Example:"
+  echo "./run 1 -v -e dev.env -p"
+  echo "=============================================="
+}
+
+select_number(){
   # 如果帶入參數不等於數字 0~9 則詢問user
-  if [[ "$1" =~ ^[0-9] ]]
-  then
+  if [[ "$1" =~ ^[0-9] ]]; then
     mode=$1
   else
+    print_options
     read -t 90 -p $'請輸入操作序號，如 1,2,3,7 \n' mode 
     if [[ ! $? -eq 0 ]]
       then
@@ -122,26 +128,29 @@ execute_option(){
   CMD=""
   if [ $mode == "1" ]; then
       echo "[ -------- 1.   build and run        -------- ]"
-      build
-      dockerRun
+      CMD=("build" "docker-compose up -d")
   elif [ $mode == "2" ]; then
       echo "[ -------- 2.   pull image and run   -------- ]"
-      CMD=("imagePull" "dockerComposeUp")
+      CMD=("imagePull" "docker-compose up -d")
   elif [ $mode == "3" ]; then
     echo "[ -------- 3.   run module           -------- ]"
+      echo 'docker run with TAG:' $TAG
       CMD=("docker-compose up -d")
   elif [ $mode == "4" ]; then
     echo "[ -------- 4.   stop module          -------- ]"
       CMD=("docker-compose down")
   elif [ $mode == "5" ]; then
     echo "[ -------- 5.   push image           -------- ]"
-      CMD=("docker push $DOCKER_IMAGE")
+      CMD=("docker push $REPO/$CONTAINER:$TAG")
   elif [ $mode == "6" ]; then
       echo "[ -------- 6.   save image           -------- ]"
       CMD=("saveImage")
   elif [ $mode == "7" ]; then
       echo "[ -------- 7.   save deploy          -------- ]"
       CMD=("saveDeploy")
+  elif [ $mode == "8" ]; then
+      echo "[ -------- 8.  delete image          -------- ]"
+      docker rmi -f $(docker images | grep $CONTAINER | awk "{print$3}")
   fi
 
   if [[ ${#CMD} > 0 ]]; then
@@ -151,14 +160,25 @@ execute_option(){
   fi
 }
 
+getopts_help(){
+  while getopts 'h' OPT; do
+      case $OPT in
+          h) print_help
+             exit 1 ;;
+      esac
+  done
+}
+
 setting_getopts(){
-  while getopts 't:e:p' OPT; do
+  while getopts 't:vlphe:' OPT; do
       echo "$OPT = $OPTARG"
       case $OPT in
-          t) TAG="$OPTARG";;
-          e) ENV="$OPTARG";;
-          p) PUSH_IMG=true;;
-          *) usage
+          t) export TAG="$OPTARG";;
+          v) export TAG=$(git rev-parse --short=7 HEAD)-$(git log HEAD -n1 --pretty='format:%cd' --date=format:'%Y%m%d-%H%M');;
+          l) export TAG=$(docker images | grep $CONTAINER | awk 'NR==1{print$2}');;
+          e) export ENV="$OPTARG";;
+          p) export PUSH_IMG=true;;
+          h) print_help
              exit 1 ;;
       esac
   done
