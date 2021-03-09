@@ -101,6 +101,7 @@ print_help(){
   echo "Run Example:"
   echo "./run 1"
   echo "./run 1 -v -t input_tag_name"
+  echo "./run 1 -v -p"
   echo "./run 1 -v -p -e dev.env -t test"
   echo "=============================================="
 }
