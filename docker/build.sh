@@ -10,6 +10,9 @@ build() {
 }
 
 imagePull() {
+    cmd "git pull"
+    echo 'execute:'$cmd
+    eval $cmd
     echo "# Launching $DOCKER_IMAGE"
     # Check if docker image exists (locally or on the registry)
     local_img=$(docker images | grep $REPO | grep $CONTAINER | grep $TAG)
